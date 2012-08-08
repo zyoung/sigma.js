@@ -187,41 +187,41 @@ function Graph() {
 
     a.forEach(function(id) {
       if (self.nodesIndex[id]) {
-        var index = null;
-        self.nodes.some(function(n, i) {
-          if (n['id'] == id) {
-            index = i;
-            return true;
-          }
-          return false;
-        });
 
-        index != null && self.nodes.splice(index, 1);
-        delete self.nodesIndex[id];
-
-        var edgesToRemove = [];
-        self.edges = self.edges.filter(function(e) {
-          if (e['source']['id'] == id) {
-            delete self.edgesIndex[e['id']];
-            e['target']['degree']--;
-            e['target']['inDegree']--;
-            return false;
-          }else if (e['target']['id'] == id) {
-            delete self.edgesIndex[e['id']];
-            e['source']['degree']--;
-            e['source']['outDegree']--;
-            return false;
-          }
-          return true;
-        });
+		for(n in self.nodes) {
+			if (self.nodes.hasOwnProperty(n) && self.nodes[n].id == id) {
+				self.nodes.splice(n, 1);
+				delete self.nodesIndex[id];
+				break;
+			}
+		}
       }else {
         sigma.log('Node "' + id + '" does not exist.');
       }
-    });
+     });
+
+
+	/**
+	 * Removed this from the above foreach so it doesn't have to loop over all 
+	 * edges every iteration. Large performance boost on very large graphs
+	 */
+    self.edges = self.edges.filter(function(e) {
+      if (a.indexOf(e['source']['id']) != -1) {
+        delete self.edgesIndex[e['id']];
+        e['target']['degree']--;
+        e['target']['inDegree']--;
+        return false;
+      }else if (a.indexOf(e['target']['id']) != -1) {
+        delete self.edgesIndex[e['id']];
+        e['source']['degree']--;
+        e['source']['outDegree']--;
+        return false;
+      }
+      return true;
+    }); 
 
     return self;
   };
-
   /**
    * Inserts an edge in the graph.
    * @param {string} id     The edge ID.
